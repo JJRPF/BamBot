@@ -65,18 +65,25 @@ capstone/
 Ensure you have the following installed:
 1.  **Python 3.12+**
 2.  **uv** (Python package manager): [Install uv](https://docs.astral.sh/uv/getting-started/installation/)
-3.  **OrcaSlicer.app**: Installed in standard applications directory `/Applications/OrcaSlicer.app`.
+3.  **OrcaSlicer**: Can be installed manually or configured using our automatic setup script.
 4.  **Google Cloud SDK / ADK**: Install the tool: `uv tool install google-agents-cli`.
 
 ### Configuration
 
-You can configure the project easily by running the interactive Python setup script:
+You can configure the project easily using the interactive setup scripts:
 
-```bash
-uv run python setup.py
-```
+1.  **Configure BamBot Agent**:
+    Run the main setup script to verify dependencies, configure ports, endpoints, and API keys:
+    ```bash
+    uv run python setup.py
+    ```
 
-This script will verify system dependencies, prompt you for API keys and endpoint URLs, dynamically scan for available ports on your system, and generate the background start scripts.
+2.  **Install & Configure OrcaSlicer**:
+    Run the slicer setup script to automatically install OrcaSlicer (via Homebrew on macOS or Flatpak/AppImage on Linux), verify paths, and generate default preset profile configurations:
+    ```bash
+    uv run python setup_orcaslicer.py
+    ```
+
 
 Alternatively, you can manually create a `.env` file in the root directory:
 

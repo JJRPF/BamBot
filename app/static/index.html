@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>BamBot | AI Command Center</title>
+    <!-- Tailwind CSS CDN with Forms and Container Queries plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="index.css">
+
+    <!-- Tailwind Config to match Stitch Design Tokens -->
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+              "primary": "#bcc7de",
+              "on-primary": "#263143",
+              "primary-container": "#1e293b",
+              "on-primary-container": "#8590a6",
+              "primary-fixed": "#d8e3fb",
+              "primary-fixed-dim": "#bcc7de",
+              "secondary": "#6bd8cb",
+              "on-secondary": "#003732",
+              "secondary-container": "#29a195",
+              "on-secondary-container": "#00302b",
+              "secondary-fixed": "#89f5e7",
+              "secondary-fixed-dim": "#6bd8cb",
+              "tertiary": "#ffb95f",
+              "on-tertiary": "#472a00",
+              "tertiary-container": "#3c2300",
+              "on-tertiary-container": "#c88000",
+              "tertiary-fixed": "#ffddb8",
+              "tertiary-fixed-dim": "#ffb95f",
+              "error": "#ffb4ab",
+              "on-error": "#690005",
+              "error-container": "#93000a",
+              "on-error-container": "#ffdad6",
+              "surface": "#031427",
+              "surface-bright": "#2a3a4f",
+              "surface-container": "#102034",
+              "surface-container-high": "#1b2b3f",
+              "surface-container-highest": "#26364a",
+              "surface-container-low": "#0b1c30",
+              "surface-container-lowest": "#000f21",
+              "surface-dim": "#031427",
+              "outline": "#8f9097",
+              "outline-variant": "#45474c",
+              "background": "#031427",
+              "on-background": "#d3e4fe",
+              "on-surface": "#d3e4fe",
+              "on-surface-variant": "#c5c6cd"
+            },
+            "borderRadius": {
+              "DEFAULT": "0.25rem",
+              "lg": "0.375rem",
+              "xl": "0.5rem",
+              "2xl": "0.75rem",
+              "full": "9999px"
+            },
+            "spacing": {
+              "unit": "4px",
+              "gutter": "16px",
+              "margin-mobile": "16px",
+              "margin-desktop": "32px",
+              "stack-sm": "8px",
+              "stack-md": "16px",
+              "stack-lg": "24px"
+            },
+            "fontFamily": {
+              "headline-md": ["Hanken Grotesk", "sans-serif"],
+              "headline-lg": ["Hanken Grotesk", "sans-serif"],
+              "body-sm": ["Inter", "sans-serif"],
+              "body-md": ["Inter", "sans-serif"],
+              "mono-code": ["JetBrains Mono", "monospace"],
+              "mono-label": ["JetBrains Mono", "monospace"]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="font-body-md bg-background text-on-surface min-h-screen overflow-hidden flex flex-col selection:bg-secondary-container selection:text-on-secondary-container">
+    <div class="glass-bg"></div>
+
+    <!-- Side Navigation Bar (AI Co-pilot Status) -->
+    <aside class="fixed left-0 top-0 h-screen flex flex-col py-stack-lg px-stack-md z-40 bg-surface-container border-r border-outline-variant w-64 hidden md:flex">
+        <div class="mb-stack-lg px-stack-sm flex flex-col gap-2">
+            <span class="font-headline-lg text-2xl font-extrabold text-primary tracking-tight">BamBot</span>
+            <span id="status-badge" class="badge badge-loading w-fit text-[11px] py-1 px-2.5">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Connecting...
+            </span>
+        </div>
+        <div class="mb-stack-lg px-stack-sm border-t border-outline-variant pt-stack-md">
+            <div class="flex items-center gap-stack-md">
+                <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center relative">
+                    <span class="material-symbols-outlined text-on-secondary-container text-2xl" data-icon="smart_toy">smart_toy</span>
+                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-surface-container"></span>
+                </div>
+                <div>
+                    <p class="font-body-md text-sm font-bold text-on-surface">AI Co-pilot</p>
+                    <p class="font-mono-label text-xs text-secondary">Active</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 flex flex-col gap-stack-sm" id="nav-tabs">
+            <button class="nav-tab-btn active bg-secondary/10 text-secondary font-bold p-stack-sm flex items-center gap-stack-md rounded-lg font-mono-label text-xs text-left w-full border-l-4 border-secondary pl-2" data-tab="dashboard-view">
+                <span class="material-symbols-outlined text-base">dashboard</span>
+                Dashboard
+            </button>
+            <button class="nav-tab-btn text-on-surface-variant p-stack-sm flex items-center gap-stack-md hover:bg-secondary/5 transition-all duration-200 rounded-lg font-mono-label text-xs text-left w-full border-l-4 border-transparent pl-2" data-tab="chat-view">
+                <span class="material-symbols-outlined text-base">forum</span>
+                AI Chat
+            </button>
+            <button class="nav-tab-btn text-on-surface-variant p-stack-sm flex items-center gap-stack-md hover:bg-secondary/5 transition-all duration-200 rounded-lg font-mono-label text-xs text-left w-full border-l-4 border-transparent pl-2" data-tab="telemetry-view">
+                <span class="material-symbols-outlined text-base">monitoring</span>
+                Detailed Telemetry
+            </button>
+            <button class="nav-tab-btn text-on-surface-variant p-stack-sm flex items-center gap-stack-md hover:bg-secondary/5 transition-all duration-200 rounded-lg font-mono-label text-xs text-left w-full border-l-4 border-transparent pl-2" data-tab="files-view">
+                <span class="material-symbols-outlined text-base">folder</span>
+                Gcode Files
+            </button>
+        </nav>
+        <div class="mt-auto flex flex-col gap-stack-md pt-stack-md border-t border-outline-variant">
+            <div class="pt-stack-sm">
+                <a class="text-on-surface-variant p-stack-sm flex items-center gap-stack-md hover:text-on-surface transition-all font-mono-label text-xs" href="#">
+                    <span class="material-symbols-outlined text-base">help</span>
+                    Help
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Panels -->
+    <main class="md:ml-64 h-screen overflow-hidden relative flex flex-col">
+        
+        <!-- ==================== DASHBOARD TAB ==================== -->
+        <div id="dashboard-view" class="tab-view active flex-1 overflow-y-auto p-margin-desktop space-y-gutter">
+            <div class="mb-stack-lg">
+                <h1 class="font-headline-lg text-3xl text-on-surface font-bold mb-stack-sm">Industrial Telemetry Dashboard</h1>
+                <div class="flex items-center gap-stack-md font-mono-label text-xs text-on-surface-variant">
+                    <div class="flex items-center gap-stack-sm">
+                        <span class="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
+                        <span>Printer State: <span id="dashboard-state" class="text-secondary font-bold uppercase ml-1">Offline</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-gutter">
+                <!-- Active Job Overview (Col 1-8) -->
+                <section class="col-span-12 lg:col-span-8 space-y-gutter">
+                    <div class="bg-surface-container-low border border-outline-variant rounded-2xl overflow-hidden shadow-xl">
+                        <div class="p-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-high/50">
+                            <div class="flex items-center gap-stack-sm">
+                                <span class="material-symbols-outlined text-secondary text-lg">precision_manufacturing</span>
+                                <span class="font-mono-label text-xs font-bold text-secondary uppercase tracking-widest">Active Print Job</span>
+                            </div>
+                            <div id="dashboard-state-badge" class="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface-container-highest text-on-surface-variant">
+                                Offline
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2">
+                            <!-- Live Camera Feed -->
+                            <div class="relative aspect-video md:aspect-auto h-64 md:h-full bg-surface-container-lowest overflow-hidden">
+                                <div class="scanline"></div>
+                                <img id="live-cam-feed" class="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-300" alt="Live print camera feed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGc4FfGm-XiE_uNuJv0Bmr2me1Ie4NFQ47PyTL9S1m2ZpokCAn1cOLoVxHdHvhNUF9dV8UnIh466Svv916bZVsKwh8PZrZcqybul19rRE0PJ6w__hHlaDzGM1RL4As8uqW94-4P9HuoKAliPHMZnDkHzhVhzpgzrD3qD-Xiq4sAf2ygevD-S_Jzj5Qhae8zdM5jkPePs9ZznTiI0wpvQMOI-av1J5Lt33leb2Nj7kNkV1hTC41CUnaZGFY3DQybN0vnhNQJVtbDwi2"/>
+                                <div class="absolute inset-0 pointer-events-none border-[12px] border-surface-container-low/20"></div>
+                                <div class="absolute top-stack-sm left-stack-sm flex items-center gap-stack-sm bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-white/10">
+                                    <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                    <span class="text-[10px] font-mono-label text-white uppercase tracking-widest">Live Cam 01</span>
+                                </div>
+                            </div>
+                            <!-- Progress Info -->
+                            <div class="p-stack-lg flex flex-col justify-between">
+                                <div class="space-y-4">
+                                    <div>
+                                        <h2 id="dashboard-active-file" class="font-headline-md text-xl text-on-surface truncate font-semibold">No active print job</h2>
+                                        <p id="dashboard-active-printer-info" class="font-mono-label text-xs text-on-surface-variant">Bambu Lab X1 Carbon</p>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-end">
+                                            <span class="font-mono-label text-xs text-on-surface-variant">Progress</span>
+                                            <span id="dashboard-progress-text" class="font-headline-md text-lg text-secondary font-bold">0%</span>
+                                        </div>
+                                        <div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                                            <div id="dashboard-progress-bar" class="h-full bg-secondary transition-all duration-500 shadow-[0_0_10px_rgba(107,216,203,0.4)]" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-stack-md pt-2">
+                                        <div>
+                                            <p class="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-wider">Nozzle Temperature</p>
+                                            <p class="font-headline-md text-lg text-on-surface"><span id="dashboard-nozzle">0.0</span>°C</p>
+                                        </div>
+                                        <div>
+                                            <p class="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-wider">Bed Temperature</p>
+                                            <p class="font-headline-md text-lg text-on-surface"><span id="dashboard-bed">0.0</span>°C</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pt-stack-lg flex gap-stack-sm">
+                                    <button class="flex-1 border border-outline-variant hover:bg-surface-container-highest text-on-surface-variant p-2 rounded-lg flex items-center justify-center gap-stack-sm transition-all" onclick="sendPrinterAction('pause')">
+                                        <span class="material-symbols-outlined text-sm">pause</span>
+                                        <span class="font-mono-label text-xs font-semibold">Pause</span>
+                                    </button>
+                                    <button class="flex-1 border border-secondary hover:bg-secondary/10 text-secondary p-2 rounded-lg flex items-center justify-center gap-stack-sm transition-all" onclick="sendPrinterAction('resume')">
+                                        <span class="material-symbols-outlined text-sm">play_arrow</span>
+                                        <span class="font-mono-label text-xs font-semibold">Resume</span>
+                                    </button>
+                                    <button class="flex-1 border border-error/30 text-error hover:bg-error/10 p-2 rounded-lg flex items-center justify-center gap-stack-sm transition-all" onclick="sendPrinterAction('cancel')">
+                                        <span class="material-symbols-outlined text-sm">cancel</span>
+                                        <span class="font-mono-label text-xs font-semibold">Cancel</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fleet Status Cards -->
+                    <div>
+                        <h3 class="font-headline-md text-lg text-on-surface mb-stack-md flex items-center gap-stack-sm font-semibold">
+                            <span class="material-symbols-outlined text-lg">grid_view</span>
+                            Fleet Telemetry Matrix
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter" id="fleet-matrix">
+                            <div class="col-span-3 text-xs font-mono-label text-on-surface-variant italic">
+                                Loading printers from BamBot...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Side Widgets (Col 9-12) -->
+                <aside class="col-span-12 lg:col-span-4 space-y-gutter">
+                    <!-- Spoolman Filament Inventory -->
+                    <div class="bg-surface-container border border-outline-variant rounded-2xl p-stack-md">
+                        <div class="flex items-center justify-between mb-stack-md border-b border-outline-variant pb-2">
+                            <div class="flex items-center gap-stack-sm">
+                                <span class="material-symbols-outlined text-secondary">inventory_2</span>
+                                <h4 class="font-mono-label text-xs font-bold uppercase text-primary">Spoolman Inventory</h4>
+                            </div>
+                            <button class="text-[10px] font-mono-label text-secondary hover:underline" onclick="fetchSpoolmanInventory()">REFRESH</button>
+                        </div>
+                        <div class="space-y-4" id="dashboard-spoolman-list">
+                            <p class="text-xs text-on-surface-variant italic">Loading spoolman inventory...</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Insights Panel -->
+                    <div class="bg-surface-container border border-outline-variant rounded-2xl p-stack-md">
+                        <div class="flex items-center gap-stack-sm mb-stack-md border-b border-outline-variant pb-2">
+                            <span class="material-symbols-outlined text-secondary">psychology</span>
+                            <h4 class="font-mono-label text-xs font-bold uppercase text-primary">AI Co-pilot Insights</h4>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-surface-container-low border-l-2 border-secondary p-stack-sm rounded-r-lg text-xs space-y-1">
+                                <p class="font-bold text-on-surface">Dynamic Cooling Enabled</p>
+                                <p class="text-on-surface-variant leading-relaxed">Agent will monitor layer times and increase cooling speeds on bridges.</p>
+                            </div>
+                            <div class="bg-surface-container-low border-l-2 border-tertiary p-stack-sm rounded-r-lg text-xs space-y-1">
+                                <p class="font-bold text-on-surface">Safeguard Checks Active</p>
+                                <p class="text-on-surface-variant leading-relaxed">Human-in-the-loop triggers will enforce physical checks before extrusion.</p>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- ==================== AI CHAT TAB ==================== -->
+        <div id="chat-view" class="tab-view flex-grow flex overflow-hidden relative">
+            <!-- Left Chat Sessions Sidebar -->
+            <aside class="w-64 flex-shrink-0 bg-surface-container border-r border-outline-variant flex flex-col h-full overflow-hidden" style="background-color: rgba(10, 20, 35, 0.95); backdrop-filter: blur(10px);">
+                <div class="p-stack-md border-b border-outline-variant flex items-center justify-between">
+                    <h2 class="font-headline-md text-xs font-bold text-primary uppercase tracking-widest">Chats</h2>
+                    <button class="material-symbols-outlined text-secondary hover:text-primary p-1 transition-all duration-200" id="btn-new-chat" title="New Chat">add_box</button>
+                </div>
+                <div class="flex-grow overflow-y-auto p-2 space-y-1 custom-scrollbar" id="chat-sessions-list">
+                    <!-- Dynamic chat sessions list goes here -->
+                </div>
+            </aside>
+
+            <!-- Chat Main Window -->
+            <div class="flex-grow flex flex-col h-full bg-surface relative overflow-hidden">
+                <!-- Chat History Timeline -->
+                <div class="flex-grow overflow-y-auto px-margin-mobile md:px-margin-desktop pt-stack-lg pb-36 flex flex-col gap-stack-lg scroll-hide" id="chat-history">
+                    <!-- Dynamic chat messages go here -->
+                </div>
+
+                <!-- Thinking indicator -->
+                <div class="typing-indicator absolute bottom-24 left-margin-desktop flex items-center gap-stack-sm" id="typing-indicator" style="display: none;">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="text-xs text-on-surface-variant">Agent is thinking...</span>
+                </div>
+
+                <!-- Floating Chat Input Area -->
+                <div class="absolute bottom-0 left-0 w-full p-stack-md md:p-stack-lg bg-gradient-to-t from-surface via-surface to-transparent">
+                    <div class="max-w-4xl mx-auto flex items-end gap-stack-sm bg-surface-container-low border border-outline-variant p-2.5 rounded-2xl shadow-2xl backdrop-blur-md">
+                        <button class="material-symbols-outlined text-on-surface-variant hover:text-primary p-2 transition-colors duration-200" id="chat-attach-btn">attach_file</button>
+                        <input type="file" id="chat-file-input" class="hidden" accept=".gcode,.3mf,.stl,.STL" />
+                        <textarea class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface text-sm py-2 px-2 resize-none max-h-32 outline-none font-body-md" id="chat-input" placeholder="Ask BamBot AI to print a file or check status..." rows="1"></textarea>
+                        <button class="bg-secondary text-on-secondary p-2.5 rounded-xl flex items-center justify-center hover:opacity-90 active:scale-95 transition-all shadow-lg" id="btn-send">
+                            <span class="material-symbols-outlined text-sm">arrow_upward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persistent Right Telemetry Sidebar -->
+            <aside class="hidden xl:flex w-80 flex-shrink-0 flex-col bg-surface-container border-l border-outline-variant h-full overflow-hidden">
+                <div class="p-stack-md border-b border-outline-variant flex items-center justify-between bg-surface-container-high/30">
+                    <h2 class="font-headline-md text-xs font-bold text-primary uppercase tracking-widest">Live Telemetry</h2>
+                    <span class="material-symbols-outlined text-secondary animate-pulse text-sm">radio_button_checked</span>
+                </div>
+                <div class="flex-grow overflow-y-auto p-stack-md space-y-stack-lg">
+                    <!-- Status Card -->
+                    <div class="bg-surface-container-high border border-outline-variant p-stack-md rounded-2xl">
+                        <div class="flex justify-between items-center mb-stack-sm">
+                            <span class="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-wider">Job Progress</span>
+                            <span id="progress-text" class="font-headline-md text-base text-secondary font-bold">0%</span>
+                        </div>
+                        <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden border border-outline-variant">
+                            <div id="progress-bar" class="h-full bg-secondary shadow-[0_0_8px_rgba(107,216,203,0.5)]" style="width: 0%;"></div>
+                        </div>
+                        <div class="mt-2 flex justify-between font-mono-label text-[10px] text-on-surface-variant">
+                            <span>Active File:</span>
+                            <span id="active-file" class="text-secondary font-semibold max-w-[150px] truncate">None</span>
+                        </div>
+                        <div class="mt-1 flex justify-between font-mono-label text-[10px] text-on-surface-variant">
+                            <span>Status:</span>
+                            <span id="printer-state" class="text-secondary font-bold uppercase">Offline</span>
+                        </div>
+                    </div>
+
+                    <!-- Temperatures -->
+                    <div class="grid grid-cols-2 gap-stack-sm">
+                        <div class="bg-surface-container-high border border-outline-variant p-stack-md rounded-2xl flex flex-col justify-between">
+                            <span class="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-wider">Nozzle</span>
+                            <div class="flex items-baseline gap-0.5 mt-1">
+                                <span id="nozzle-temp" class="font-headline-md text-xl text-on-surface font-extrabold">0.0</span>
+                                <span class="text-xs text-on-surface-variant">°C</span>
+                            </div>
+                            <span class="text-[9px] text-on-surface-variant mt-1">Target: <span id="target-nozzle-temp">0</span>°C</span>
+                        </div>
+                        <div class="bg-surface-container-high border border-outline-variant p-stack-md rounded-2xl flex flex-col justify-between">
+                            <span class="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-wider">Bed</span>
+                            <div class="flex items-baseline gap-0.5 mt-1">
+                                <span id="bed-temp" class="font-headline-md text-xl text-on-surface font-extrabold">0.0</span>
+                                <span class="text-xs text-on-surface-variant">°C</span>
+                            </div>
+                            <span class="text-[9px] text-on-surface-variant mt-1">Target: <span id="target-bed-temp">0</span>°C</span>
+                        </div>
+                    </div>
+
+                    <!-- AMS Slots Mapping -->
+                    <div class="bg-surface-container-high border border-outline-variant p-stack-md rounded-2xl space-y-3">
+                        <span class="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5 border-b border-outline-variant pb-1">
+                            <span class="material-symbols-outlined text-xs">texture</span>
+                            AMS Active Slots
+                        </span>
+                        <div class="grid grid-cols-4 gap-2" id="ams-slots-grid">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+
+            </aside>
+        </div>
+
+        <!-- ==================== DETAILED TELEMETRY TAB ==================== -->
+        <div id="telemetry-view" class="tab-view flex-1 overflow-y-auto p-margin-desktop space-y-gutter">
+            <div class="flex justify-between items-end mb-4">
+                <div>
+                    <h1 class="font-headline-lg text-2xl text-primary font-bold tracking-tight">System Telemetry Analytics</h1>
+                    <p class="font-body-sm text-xs text-on-surface-variant">Real-time performance profiles and thermal dynamics</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-gutter">
+                <!-- Temperatures Dynamic Chart -->
+                <section class="col-span-12 lg:col-span-8 bg-surface-container border border-outline-variant rounded-2xl overflow-hidden flex flex-col shadow-lg">
+                    <div class="p-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-high/50">
+                        <div class="flex items-center gap-stack-md">
+                            <span class="material-symbols-outlined text-secondary">monitoring</span>
+                            <h3 class="font-headline-md text-sm font-bold text-primary">Thermal Dynamics Graph</h3>
+                        </div>
+                        <div class="flex gap-stack-md text-xs font-mono-label">
+                            <span class="flex items-center gap-1.5 text-on-surface-variant">
+                                <span class="w-3 h-1 bg-red-500 rounded-full"></span> Nozzle
+                            </span>
+                            <span class="flex items-center gap-1.5 text-on-surface-variant">
+                                <span class="w-3 h-1 bg-yellow-500 rounded-full"></span> Bed
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative h-64 p-stack-md">
+                        <div class="chart-container w-full h-full">
+                            <canvas id="tempChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Network details card -->
+                <section class="col-span-12 lg:col-span-4 bg-surface-container border border-outline-variant rounded-2xl p-stack-md flex flex-col justify-between shadow-lg">
+                    <div class="flex items-center gap-stack-sm border-b border-outline-variant pb-2">
+                        <span class="material-symbols-outlined text-primary">settings_input_antenna</span>
+                        <h3 class="font-mono-label text-xs font-bold text-primary">NETWORKING & SIGNAL</h3>
+                    </div>
+                    <div class="space-y-stack-md flex-1 py-4 text-xs font-mono-label space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-on-surface-variant">Connection Status</span>
+                            <span class="text-secondary font-bold">SECURE</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-on-surface-variant">Signal Strength</span>
+                            <span class="text-secondary font-bold">-48 dBm</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-on-surface-variant">Uptime</span>
+                            <span class="text-primary">12:35:12</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Hardware health matrix -->
+                <section class="col-span-12 bg-surface-container border border-outline-variant rounded-2xl p-stack-md shadow-lg">
+                    <div class="flex items-center gap-stack-sm border-b border-outline-variant pb-2 mb-stack-md">
+                        <span class="material-symbols-outlined text-primary">grid_view</span>
+                        <h3 class="font-mono-label text-xs font-bold text-primary uppercase">Hardware Diagnostic Status</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+                        <div class="bg-surface-container-low p-stack-md rounded-xl border border-outline-variant">
+                            <p class="font-mono-label text-[10px] text-on-surface-variant uppercase">CPU Load</p>
+                            <p class="font-headline-md text-base text-primary font-bold mt-1">28.4%</p>
+                        </div>
+                        <div class="bg-surface-container-low p-stack-md rounded-xl border border-outline-variant">
+                            <p class="font-mono-label text-[10px] text-on-surface-variant uppercase">RAM Allocated</p>
+                            <p class="font-headline-md text-base text-primary font-bold mt-1">1.8 GB</p>
+                        </div>
+                        <div class="bg-surface-container-low p-stack-md rounded-xl border border-outline-variant">
+                            <p class="font-mono-label text-[10px] text-on-surface-variant uppercase">Logic Controller Temp</p>
+                            <p class="font-headline-md text-base text-secondary font-bold mt-1">36.2°C</p>
+                        </div>
+                        <div class="bg-surface-container-low p-stack-md rounded-xl border border-outline-variant">
+                            <p class="font-mono-label text-[10px] text-on-surface-variant uppercase">Driver Temp</p>
+                            <p class="font-headline-md text-base text-secondary font-bold mt-1">42.0°C</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ==================== FILES TAB ==================== -->
+        <div id="files-view" class="tab-view flex-1 overflow-y-auto p-margin-desktop space-y-gutter">
+            <div class="flex justify-between items-end mb-4 border-b border-outline-variant pb-2">
+                <div>
+                    <h1 class="font-headline-lg text-2xl text-primary font-bold tracking-tight">Printer File Manager</h1>
+                    <p class="font-body-sm text-xs text-on-surface-variant">Select a sliced Gcode file stored on the printer to start printing</p>
+                </div>
+                <button class="text-xs font-mono-label text-secondary hover:underline flex items-center gap-1" onclick="fetchPrinterFiles()">
+                    <span class="material-symbols-outlined text-sm">refresh</span> Refresh Files
+                </button>
+            </div>
+
+            <!-- Gcode file list container -->
+            <div class="flex flex-col gap-3" id="files-list-container">
+                <p class="text-xs text-on-surface-variant italic">Loading printer file records...</p>
+            </div>
+        </div>
+
+        <!-- ==================== OBSERVABILITY DRAWER (MODAL) ==================== -->
+        <!-- Collapsible drawer to keep tokens and trajectory details accessible but clean -->
+        <div class="absolute bottom-0 right-0 z-40 p-4">
+            <button class="bg-surface-container border border-outline-variant hover:bg-surface-container-high text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg text-on-surface-variant font-mono-label" onclick="toggleObservabilityDrawer()">
+                <span class="material-symbols-outlined text-xs">psychology</span> Observability Metrics
+            </button>
+        </div>
+
+        <div id="observability-drawer" class="fixed right-0 top-0 h-screen w-96 bg-surface-container border-l border-outline-variant z-50 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col hidden">
+            <div class="p-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-high/30">
+                <h3 class="font-mono-label text-xs font-bold uppercase text-primary">Observability Diagnostics</h3>
+                <button class="material-symbols-outlined text-on-surface-variant hover:text-white" onclick="toggleObservabilityDrawer()">close</button>
+            </div>
+            <div class="flex-grow overflow-y-auto p-stack-md space-y-6">
+                <!-- Tokens Card -->
+                <div class="bg-surface-container-low border border-outline-variant p-stack-md rounded-xl space-y-3">
+                    <h4 class="font-mono-label text-[11px] font-bold text-on-surface-variant uppercase">Model Token Utilization</h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs font-mono-label">
+                        <div class="bg-surface-container p-2 rounded border border-outline-variant/30">
+                            <p class="text-[9px] text-on-surface-variant">PROMPT</p>
+                            <p class="text-sm font-bold text-secondary mt-0.5" id="metric-prompt">0</p>
+                        </div>
+                        <div class="bg-surface-container p-2 rounded border border-outline-variant/30">
+                            <p class="text-[9px] text-on-surface-variant">CANDIDATES</p>
+                            <p class="text-sm font-bold text-secondary mt-0.5" id="metric-candidates">0</p>
+                        </div>
+                        <div class="bg-surface-container p-2 rounded border border-outline-variant/30">
+                            <p class="text-[9px] text-on-surface-variant">THINKING</p>
+                            <p class="text-sm font-bold text-secondary mt-0.5" id="metric-thinking">0</p>
+                        </div>
+                        <div class="bg-surface-container p-2 rounded border border-outline-variant/30">
+                            <p class="text-[9px] text-on-surface-variant">TOTAL</p>
+                            <p class="text-sm font-bold text-secondary mt-0.5" id="metric-total">0</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs font-mono-label pt-2 border-t border-outline-variant/30">
+                        <span>API Cost Estimate:</span>
+                        <span class="text-secondary font-bold">$<span id="metric-cost">0.000000</span></span>
+                    </div>
+                </div>
+
+                <!-- Trajectory Card -->
+                <div class="bg-surface-container-low border border-outline-variant p-stack-md rounded-xl space-y-3 flex-grow flex flex-col">
+                    <h4 class="font-mono-label text-[11px] font-bold text-on-surface-variant uppercase">Agent Trajectory Execution Trace</h4>
+                    <div class="flex-grow min-h-[300px] max-h-[450px] overflow-y-auto bg-surface-container-lowest p-2 rounded-lg border border-outline-variant/30 space-y-2 text-[10px] font-mono-code scroll-hide" id="trajectory-log">
+                        <p class="text-on-surface-variant italic">No tools have been executed in this session.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Manual Print Safety & AMS Mapping Modal -->
+    <div id="manual-print-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md">
+        <div class="bg-surface-container border border-outline-variant rounded-2xl w-full max-w-lg p-stack-lg shadow-2xl flex flex-col gap-stack-md transition-all duration-300 transform scale-95 opacity-0" id="manual-print-modal-card">
+            <div class="flex justify-between items-center border-b border-outline-variant/30 pb-3">
+                <div class="flex items-center gap-stack-sm text-secondary">
+                    <span class="material-symbols-outlined">precision_manufacturing</span>
+                    <h3 class="font-headline-md text-base font-bold text-on-surface">Start Print Job</h3>
+                </div>
+                <button class="material-symbols-outlined text-on-surface-variant hover:text-white" onclick="closeManualPrintModal()">close</button>
+            </div>
+            
+            <div class="flex flex-col gap-4 text-xs">
+                <div>
+                    <p class="font-mono-label text-[10px] text-on-surface-variant uppercase">G-code File name</p>
+                    <p class="font-bold text-sm text-primary truncate mt-0.5" id="modal-filename"></p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="font-mono-label text-[10px] text-on-surface-variant uppercase">Estimated Print Time</p>
+                        <p class="font-semibold text-on-surface mt-0.5" id="modal-print-time">Unknown</p>
+                    </div>
+                    <div>
+                        <p class="font-mono-label text-[10px] text-on-surface-variant uppercase">Target Bed Plate</p>
+                        <p class="font-semibold text-on-surface mt-0.5" id="modal-bed-plate">Textured PEI Plate</p>
+                    </div>
+                </div>
+
+                <!-- AMS Mapping Section -->
+                <div class="bg-surface-container-low p-stack-md rounded-xl border border-outline-variant/30 space-y-3" id="modal-ams-section">
+                    <div class="font-bold text-primary flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">texture</span> AMS Filament Mapping
+                    </div>
+                    <div class="space-y-3" id="modal-filament-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Safety Checkbox list -->
+                <div class="space-y-2.5 pt-2">
+                    <div class="font-bold text-tertiary flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">warning</span> Safety Checklists
+                    </div>
+                    <label class="hitl-item flex items-center gap-2 text-on-surface-variant select-none cursor-pointer">
+                        <input type="checkbox" id="modal-chk-bed" class="rounded border-outline-variant bg-surface-container-high focus:ring-secondary text-secondary">
+                        <span>Confirm print bed is fully cleared of previous prints.</span>
+                    </label>
+                    <label class="hitl-item flex items-center gap-2 text-on-surface-variant select-none cursor-pointer" id="modal-chk-door-wrapper" style="display:none;">
+                        <input type="checkbox" id="modal-chk-door" class="rounded border-outline-variant bg-surface-container-high focus:ring-secondary text-secondary">
+                        <span>Confirm printer door/lid is fully closed (required for ASA/ABS).</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-outline-variant/30 flex gap-stack-md">
+                <button class="flex-grow bg-surface-container-highest text-on-surface-variant hover:bg-surface-container-high hover:text-white py-2.5 rounded-xl font-bold font-mono-label text-xs tracking-wider" onclick="closeManualPrintModal()">
+                    CANCEL
+                </button>
+                <button class="flex-grow bg-secondary text-on-secondary hover:brightness-105 py-2.5 rounded-xl font-bold font-mono-label text-xs tracking-wider shadow-lg flex items-center justify-center gap-1.5" onclick="submitManualPrintJob()">
+                    <span class="material-symbols-outlined text-sm">play_arrow</span> CONFIRM & START PRINT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reusable Custom Modal Alert (replacing browser alerts) -->
+    <div id="custom-alert-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md">
+        <div class="bg-surface-container border border-outline-variant rounded-2xl w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 text-center transition-all duration-300 transform scale-95 opacity-0" id="custom-alert-card">
+            <div class="flex flex-col items-center gap-2">
+                <span id="custom-alert-icon" class="material-symbols-outlined text-4xl text-secondary">check_circle</span>
+                <h3 id="custom-alert-title" class="font-headline-md text-base font-bold text-on-surface">Success</h3>
+                <p id="custom-alert-message" class="text-xs text-on-surface-variant leading-relaxed"></p>
+            </div>
+            <button class="bg-secondary text-on-secondary hover:brightness-105 py-2.5 rounded-xl font-bold font-mono-label text-xs tracking-wider shadow-md w-full active:scale-95 transition-all" onclick="closeCustomAlert()">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Toast Notification -->
+    <div id="toast-error" class="error-toast" style="display: none;">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span id="toast-message"></span>
+    </div>
+
+    <!-- Main JS Controller -->
+    <script src="dashboard.js"></script>
+</body>
+</html>

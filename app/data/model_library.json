@@ -1,0 +1,50 @@
+[
+  {
+    "id": "3dbenchy",
+    "name": "3DBenchy - The jolly 3D printing calibration boat",
+    "creator": "CreativeTools",
+    "description": "3DBenchy is a 3D model specifically designed for testing and benchmarking 3D printers. It features multiple challenging details such as overhangs, bridges, round holes, thin tubes, and flat surfaces.",
+    "site": "Printables",
+    "original_url": "https://www.printables.com/model/3161-3dbenchy",
+    "image_url": "https://images.printables.com/media/prints/3161/images/29167_8d9fd6b1-cf8d-4e92-97b7-5a1e8a93e3d2/thumbs/cover/1200x630/jpg/creative-tools-3dbenchy.jpg",
+    "local_stl_path": "app/data/models/3dbenchy.stl",
+    "recommended_settings": {
+      "filament": "PLA",
+      "bed_plate": "Textured PEI Plate",
+      "layer_height": "0.20mm",
+      "infill": "10% Grid"
+    }
+  },
+  {
+    "id": "calibration_cube",
+    "name": "XYZ 20mm Calibration Cube",
+    "creator": "iRacer",
+    "description": "A simple XYZ 20mm calibration cube to test your printer's dimensional accuracy. It has letters X, Y, and Z indented on the faces.",
+    "site": "Thingiverse",
+    "original_url": "https://www.thingiverse.com/thing:1278865",
+    "image_url": "https://cdn.thingiverse.com/assets/f4/bf/a1/38/c2/XYZ_20mm_Calibration_Cube.jpg",
+    "local_stl_path": "app/data/models/calibration_cube.stl",
+    "recommended_settings": {
+      "filament": "PLA",
+      "bed_plate": "Textured PEI Plate",
+      "layer_height": "0.20mm",
+      "infill": "15% Gyroid"
+    }
+  },
+  {
+    "id": "spool_holder",
+    "name": "Universal Filament Spool Holder",
+    "creator": "BambuCustoms",
+    "description": "An upgraded heavy-duty spool holder designed for the side panel of the Bambu Lab X1C. Offers low-friction rotational guide bearings.",
+    "site": "MakerWorld",
+    "original_url": "https://makerworld.com/en/models/15291",
+    "image_url": "https://images.makerworld.com/uploads/project/15291/cover.jpg",
+    "local_stl_path": "app/data/models/spool_holder.stl",
+    "recommended_settings": {
+      "filament": "PETG",
+      "bed_plate": "Engineering Plate",
+      "layer_height": "0.20mm",
+      "infill": "25% Grid"
+    }
+  }
+]

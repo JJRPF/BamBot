@@ -1,0 +1,38 @@
+{
+  "troubleshooting": [
+    {
+      "topic": "PETG Stringing",
+      "keywords": ["petg", "stringing", "oozing", "whispy", "hairy"],
+      "solution": "PETG is highly hygroscopic and absorbs moisture from the air, which causes print oozing and whispy strings. To fix: 1) Dry your PETG filament in a dryer at 65°C for 6-8 hours. 2) Increase retraction length to 1.4mm (for direct drive) and retraction speed to 45mm/s. 3) Reduce printing temperature by 5-10°C (down to 240°C if prints permit). 4) Enable Z-hop only when crossing walls."
+    },
+    {
+      "topic": "PLA Bed Adhesion & Warping",
+      "keywords": ["pla", "warping", "adhesion", "peeling", "lifting", "unstuck"],
+      "solution": "If PLA prints lift at the corners or fail to adhere: 1) Clean the build plate thoroughly with warm water and dish soap (Dawn), followed by 99% IPA to remove oils. 2) Set bed temperature to 55-65°C for the first layer. 3) Disable cooling fans for the first 3 layers. 4) Use a Brim (5-10mm width) in slicer settings. 5) Check bed leveling and Z-offset calibration."
+    },
+    {
+      "topic": "ABS/ASA Bed Lifting & Cracking",
+      "keywords": ["abs", "asa", "cracking", "splitting", "lifting", "chamber", "draft"],
+      "solution": "ABS and ASA shrink significantly upon cooling, leading to layer cracking and peeling. 1) Always print with a closed chamber door and lid. 2) Set bed temperature to 90-110°C. 3) Preheat the chamber for 15-20 minutes before starting the print. 4) Set chamber cooling fan to 0%. 5) Keep auxiliary fan completely turned off."
+    },
+    {
+      "topic": "Nozzle Clog / Jam",
+      "keywords": ["clog", "jam", "extruder", "clicking", "under-extrusion", "clogged"],
+      "solution": "When the nozzle is clogged: 1) Perform a 'cold pull' (heat to 220°C, push filament, let cool to 90°C, and pull out firmly). 2) Use a 0.4mm cleaning needle to clear debris from the nozzle tip while heated to 250°C. 3) Check extruder gear tension. 4) Ensure filament path has no sharp bends."
+    }
+  ],
+  "faq": [
+    {
+      "question": "What is the maximum nozzle temperature of the Bambu Lab X1C?",
+      "answer": "The maximum nozzle temperature of the Bambu Lab X1C is 300°C. The software and safety guardrails restrict heating beyond this to prevent damage to the hotend."
+    },
+    {
+      "question": "What is the maximum bed temperature of the Bambu Lab X1C?",
+      "answer": "The maximum bed temperature of the Bambu Lab X1C is 120°C (depending on the voltage configuration, typical limit is 110-120°C)."
+    },
+    {
+      "question": "Which build plates are supported on the Bambu Lab X1C?",
+      "answer": "Supported plates include: Cool Plate, Engineering Plate, High Temperature Plate, Textured PEI Plate, and Smooth PEI Plate."
+    }
+  ]
+}

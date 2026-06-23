@@ -93,7 +93,7 @@ def configure_agent_port():
     print("  you should select a different port for the BamBot Agent.")
 
     suggested = []
-    candidates = [8080, 8002, 8003, 8004, 8005, 8081, 9000]
+    candidates = [8080, 8003, 8004, 8005, 8081, 9000]
     for p in candidates:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -105,7 +105,7 @@ def configure_agent_port():
             continue
             
     suggested_str = ", ".join(map(str, suggested))
-    default_port = 8080 if 8080 in suggested else (suggested[0] if suggested else 8002)
+    default_port = 8080 if 8080 in suggested else (suggested[0] if suggested else 8003)
     
     print(f"  Suggested available ports on this system: {CYAN}{suggested_str}{RESET}")
     port_input = input(f"  Enter the port to run BamBot Agent Web Portal on [{default_port}]: ").strip()

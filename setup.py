@@ -4,6 +4,7 @@ import sys
 import subprocess
 import re
 import shutil
+import socket
 
 # Color Codes for Pretty Terminal Output
 GREEN = "\033[92m"
@@ -23,7 +24,7 @@ def print_banner():
  / /_/ / /_/ / / / / / / /_/ / /_/ / /_/ / /_/ / /_/ / / 
 /_____/\\__,_/_/ /_/ /_/_____/\\__,_/\\__,_/\\__,_/\\__, /\\__,_/  
                                               /____/    
-          🤖 BamBuddy X1C Printer Agent Setup Script 🤖
+          🤖 BamBot X1C Printer Agent Setup Script 🤖
 ======================================================================{RESET}
 """
     print(banner)
@@ -85,6 +86,37 @@ def load_existing_env(filepath):
                         env_vars[parts[0].strip()] = parts[1].strip()
     return env_vars
 
+def configure_agent_port():
+    print(f"\n{BOLD}🔌 5. Configure BamBot Agent Port:{RESET}")
+    print("  The real BamBuddy API server defaults to port 8000.")
+    print("  Since we cannot run the BamBot Agent Web Portal and the BamBuddy API on the same port,")
+    print("  you should select a different port for the BamBot Agent.")
+
+    suggested = []
+    candidates = [8080, 8002, 8003, 8004, 8005, 8081, 9000]
+    for p in candidates:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('127.0.0.1', p))
+                suggested.append(p)
+                if len(suggested) >= 3:
+                    break
+        except Exception:
+            continue
+            
+    suggested_str = ", ".join(map(str, suggested))
+    default_port = 8080 if 8080 in suggested else (suggested[0] if suggested else 8002)
+    
+    print(f"  Suggested available ports on this system: {CYAN}{suggested_str}{RESET}")
+    port_input = input(f"  Enter the port to run BamBot Agent Web Portal on [{default_port}]: ").strip()
+    if not port_input:
+        return default_port
+    try:
+        return int(port_input)
+    except ValueError:
+        print(f"  {YELLOW}Invalid port format. Using default: {default_port}{RESET}")
+        return default_port
+
 def configure_environment():
     print(f"\n{BOLD}[Step 1: Configuration]{RESET}")
     print("Setting up your .env configuration files. Press enter to accept defaults.")
@@ -125,8 +157,9 @@ def configure_environment():
     # 2. BamBuddy URL
     print(f"\n{BOLD}🌐 2. BamBuddy API URL:{RESET}")
     print(f"  {CYAN}Description:{RESET} The HTTP URL of your BamBuddy control instance.")
+    print(f"  {YELLOW}Note: BamBuddy defaults to port 8000 for their API.{RESET}")
     print("  - For local mock testing: use 'http://localhost:8001'")
-    print("  - For live printer Pi:    use 'http://<your-pi-ip>:<port>'")
+    print("  - For live printer Pi:    use 'http://<your-pi-ip>:8000' (or the configured port)")
     default_url = existing.get("BAMBUDDY_URL", "http://localhost:8001")
     bambuddy_url = input(f"  Enter your BamBuddy API URL [{default_url}]: ").strip()
     if not bambuddy_url:
@@ -167,7 +200,7 @@ def configure_environment():
     # Write configs
     print(f"\n[{CYAN}*{RESET}] Saving environment configuration to .env and app/.env...")
     
-    env_content = f"""# BamBuddy Printer Agent Environment Variables
+    env_content = f"""# BamBot Printer Agent Environment Variables
 GEMINI_API_KEY={gemini_key}
 GOOGLE_API_KEY={gemini_key}
 BAMBUDDY_URL={bambuddy_url}
@@ -188,6 +221,9 @@ BAMBUDDY_URL={bambuddy_url}
             f.write(f"TELEGRAM_BOT_TOKEN={tg_token}\nTELEGRAM_CHAT_ID={tg_chat}\n")
 
     print(f"{GREEN}✔ Configuration files updated successfully.{RESET}")
+    
+    agent_port = configure_agent_port()
+    return agent_port
 
 def install_dependencies():
     print(f"\n{BOLD}[Step 2: Dependency Installation]{RESET}")
@@ -216,25 +252,25 @@ def run_tests():
     except Exception:
         print(f"{RED}❌ Some unit tests failed. Please check your dependencies or agent configuration.{RESET}")
 
-def print_usage_guide():
+def print_usage_guide(agent_port):
     guide = f"""
 {BLUE}{BOLD}======================================================================
                    🎉 Setup Completed Successfully! 🎉
 ======================================================================{RESET}
 
-Here is how to run and use the BamBuddy Printer Agent:
+Here is how to run and use the BamBot Printer Agent:
 
 {BOLD}1. Run the Mock Printer Server (for local testing):{RESET}
    If you do not have a live BamBuddy instance, run the mock server on port 8001:
    {GREEN}uv run uvicorn tests.mock_bambuddy:app --host 0.0.0.0 --port 8001{RESET}
 
 {BOLD}2. Run the FastAPI Web Portal & Agent Server:{RESET}
-   Start the main agent portal on port 8000:
-   {GREEN}uv run uvicorn app.fast_api_app:app --host 0.0.0.0 --port 8000{RESET}
+   Start the main agent portal on port {agent_port}:
+   {GREEN}uv run uvicorn app.fast_api_app:app --host 0.0.0.0 --port {agent_port}{RESET}
 
 {BOLD}3. Use the Dashboard Web Portal:{RESET}
    Open your browser to:
-   👉 {CYAN}{BOLD}http://localhost:8000{RESET}
+   👉 {CYAN}{BOLD}http://localhost:{agent_port}{RESET}
    
    This dashboard gives you a full Glassmorphic interface featuring:
    - 💬 {BOLD}Chat Box{RESET}: Send instructions to the agent (e.g. "heat nozzle to 220" or "start benchy").
@@ -250,26 +286,26 @@ Here is how to run and use the BamBuddy Printer Agent:
 """
     print(guide)
 
-def create_start_script():
+def create_start_script(agent_port):
     # Helper start script to run both mock and app together in background
-    start_sh_content = """#!/bin/bash
+    start_sh_content = f"""#!/bin/bash
 # Color definitions
 GREEN="\\033[92m"
 BLUE="\\033[94m"
 YELLOW="\\033[93m"
 RESET="\\033[0m"
 
-echo -e "${BLUE}=========================================${RESET}"
-echo -e "${BLUE}   Starting BamBuddy Agent Services...   ${RESET}"
-echo -e "${BLUE}=========================================${RESET}"
+echo -e "${{BLUE}}=========================================${{RESET}}"
+echo -e "${{BLUE}}   Starting BamBot Agent Services...   ${{RESET}}"
+echo -e "${{BLUE}}=========================================${{RESET}}"
 
-# Kill any existing uvicorn processes on 8000 and 8001
-echo "Cleaning up any stale servers on ports 8000/8001..."
-pkill -f "uvicorn.*8000" || true
+# Kill any existing uvicorn processes on {agent_port} and 8001
+echo "Cleaning up any stale servers on ports {agent_port}/8001..."
+pkill -f "uvicorn.*{agent_port}" || true
 pkill -f "uvicorn.*8001" || true
 
 # Start Mock Printer Server
-echo -e "Starting ${YELLOW}Mock BamBuddy API Server${RESET} on port 8001..."
+echo -e "Starting ${{YELLOW}}Mock BamBot API Server${{RESET}} on port 8001..."
 uv run uvicorn tests.mock_bambuddy:app --host 0.0.0.0 --port 8001 > mock_bambuddy.log 2>&1 &
 MOCK_PID=$!
 
@@ -277,32 +313,32 @@ MOCK_PID=$!
 sleep 1.5
 
 # Start FastAPI Portal
-echo -e "Starting ${YELLOW}FastAPI Agent Web Portal${RESET} on port 8000..."
-uv run uvicorn app.fast_api_app:app --host 0.0.0.0 --port 8000 > fast_api_app.log 2>&1 &
+echo -e "Starting ${{YELLOW}}FastAPI Agent Web Portal${{RESET}} on port {agent_port}..."
+uv run uvicorn app.fast_api_app:app --host 0.0.0.0 --port {agent_port} > fast_api_app.log 2>&1 &
 PORTAL_PID=$!
 
-echo -e "${GREEN}✔ Both services successfully running in the background!${RESET}"
-echo -e "- Mock Printer API:  ${BLUE}http://localhost:8001${RESET}"
-echo -e "- Web Dashboard UI:  ${BLUE}http://localhost:8000${RESET}"
+echo -e "${{GREEN}}✔ Both services successfully running in the background!${{RESET}}"
+echo -e "- Mock Printer API:  ${{BLUE}}http://localhost:8001${{RESET}}"
+echo -e "- Web Dashboard UI:  ${{BLUE}}http://localhost:{agent_port}${{RESET}}"
 echo ""
 echo "Logs are written to 'mock_bambuddy.log' and 'fast_api_app.log'."
-echo -e "To stop both servers, run: ${YELLOW}kill $MOCK_PID $PORTAL_PID${RESET}"
-echo -e "${BLUE}=========================================${RESET}"
+echo -e "To stop both servers, run: ${{YELLOW}}kill $MOCK_PID $PORTAL_PID${{RESET}}"
+echo -e "${{BLUE}}=========================================${{RESET}}"
 """
     with open("start.sh", "w") as f:
         f.write(start_sh_content)
     os.chmod("start.sh", 0o755)
-    print(f"[{GREEN}✔{RESET}] Created helper script {BOLD}./start.sh{RESET} to run both servers simultaneously.")
+    print(f"[{{GREEN}}✔{{RESET}}] Created helper script {{BOLD}}./start.sh{{RESET}} to run both servers simultaneously.")
 
 def main():
     print_banner()
     check_python_version()
     check_dependencies()
-    configure_environment()
+    agent_port = configure_environment()
     install_dependencies()
-    create_start_script()
+    create_start_script(agent_port)
     run_tests()
-    print_usage_guide()
+    print_usage_guide(agent_port)
 
 if __name__ == "__main__":
     main()

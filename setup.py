@@ -18,12 +18,12 @@ RESET = "\033[0m"
 def print_banner():
     banner = f"""
 {BLUE}{BOLD}======================================================================
-    ____                  ____            __     __     
-   / __ )____ _____ ___  / __ )__  ______/ /____/ /_  __
-  / __  / __ `/ __ `__ \\/ __  / / / / __  / __  / / / / /
- / /_/ / /_/ / / / / / / /_/ / /_/ / /_/ / /_/ / /_/ / / 
-/_____/\\__,_/_/ /_/ /_/_____/\\__,_/\\__,_/\\__,_/\\__, /\\__,_/  
-                                              /____/    
+    ____                  ____        __ 
+   / __ )____ _____ ___  / __ )____  / /_
+  / __  / __ `/ __ `__ \\/ __  / __ \\/ __/
+ / /_/ / /_/ / / / / / / /_/ / /_/ / /_  
+/_____/\\__,_/_/ /_/ /_/_____/\\____/\\__/  
+
           🤖 BamBot X1C Printer Agent Setup Script 🤖
 ======================================================================{RESET}
 """
@@ -87,7 +87,7 @@ def load_existing_env(filepath):
     return env_vars
 
 def configure_agent_port():
-    print(f"\n{BOLD}🔌 5. Configure BamBot Agent Port:{RESET}")
+    print(f"\n{BOLD}🔌 7. Configure BamBot Agent Port:{RESET}")
     print("  The real BamBuddy API server defaults to port 8000.")
     print("  Since we cannot run the BamBot Agent Web Portal and the BamBuddy API on the same port,")
     print("  you should select a different port for the BamBot Agent.")
@@ -197,6 +197,52 @@ def configure_environment():
     else:
         tg_chat = ""
 
+    # Load or auto-detect OrcaSlicer binary path
+    detected_orca_path = existing.get("ORCA_SLICER_PATH", "")
+    if not detected_orca_path:
+        mac_path = "/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer"
+        if os.path.exists(mac_path):
+            detected_orca_path = mac_path
+        else:
+            which_orca = shutil.which("orcaslicer") or shutil.which("OrcaSlicer") or shutil.which("orca-slicer")
+            if which_orca:
+                detected_orca_path = which_orca
+            else:
+                for p in ["/usr/bin/orcaslicer", "/usr/local/bin/orcaslicer", "/usr/bin/OrcaSlicer"]:
+                    if os.path.exists(p):
+                        detected_orca_path = p
+                        break
+                        
+    # Load or auto-detect OrcaSlicer resources directory
+    detected_orca_res = existing.get("ORCA_RESOURCES_DIR", "")
+    if not detected_orca_res:
+        home = os.path.expanduser("~")
+        mac_res_dir = os.path.join(home, "Library", "Application Support", "OrcaSlicer", "system", "BBL")
+        linux_res_dir = os.path.join(home, ".config", "OrcaSlicer", "system", "BBL")
+        linux_res_dir_lower = os.path.join(home, ".config", "orcaslicer", "system", "BBL")
+        if os.path.exists(mac_res_dir):
+            detected_orca_res = mac_res_dir
+        elif os.path.exists(linux_res_dir):
+            detected_orca_res = linux_res_dir
+        elif os.path.exists(linux_res_dir_lower):
+            detected_orca_res = linux_res_dir_lower
+        else:
+            detected_orca_res = mac_res_dir # Default fallback
+
+    # 5. OrcaSlicer Executable Path
+    print(f"\n{BOLD}💿 5. OrcaSlicer Executable Path:{RESET}")
+    print("  Specify the path to the OrcaSlicer executable on this machine.")
+    orca_slicer_path = input(f"  Enter OrcaSlicer Path [{detected_orca_path or 'Not found'}]: ").strip()
+    if not orca_slicer_path:
+        orca_slicer_path = detected_orca_path
+
+    # 6. OrcaSlicer Resources Directory
+    print(f"\n{BOLD}📂 6. OrcaSlicer Presets Directory:{RESET}")
+    print("  Specify the directory containing 'process', 'filament', and 'machine' subdirectories.")
+    orca_res_dir = input(f"  Enter Presets Directory [{detected_orca_res}]: ").strip()
+    if not orca_res_dir:
+        orca_res_dir = detected_orca_res
+
     # Write configs
     print(f"\n[{CYAN}*{RESET}] Saving environment configuration to .env and app/.env...")
     
@@ -204,6 +250,8 @@ def configure_environment():
 GEMINI_API_KEY={gemini_key}
 GOOGLE_API_KEY={gemini_key}
 BAMBUDDY_URL={bambuddy_url}
+ORCA_SLICER_PATH={orca_slicer_path}
+ORCA_RESOURCES_DIR={orca_res_dir}
 """
     if bambuddy_key:
         env_content += f"BAMBUDDY_API_KEY={bambuddy_key}\n"
@@ -214,7 +262,7 @@ BAMBUDDY_URL={bambuddy_url}
         f.write(env_content)
         
     with open("app/.env", "w") as f:
-        f.write(f"# AI Studio Configuration\nGOOGLE_API_KEY={gemini_key}\nGEMINI_API_KEY={gemini_key}\nBAMBUDDY_URL={bambuddy_url}\n")
+        f.write(f"# AI Studio Configuration\nGOOGLE_API_KEY={gemini_key}\nGEMINI_API_KEY={gemini_key}\nBAMBUDDY_URL={bambuddy_url}\nORCA_SLICER_PATH={orca_slicer_path}\nORCA_RESOURCES_DIR={orca_res_dir}\n")
         if bambuddy_key:
             f.write(f"BAMBUDDY_API_KEY={bambuddy_key}\n")
         if tg_token and tg_chat:

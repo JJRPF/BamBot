@@ -5,6 +5,11 @@ import json
 import httpx
 from typing import Optional
 from mcp.server.fastmcp import FastMCP
+import dotenv
+
+# Load environment variables from .env
+dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), "app", ".env"))
 
 # Add root directory to python path if not present (to allow importing app module)
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))

@@ -27,6 +27,12 @@ def print_banner():
                                           
          💿 BamBot OrcaSlicer Auto-Installer & Configurator 💿
 ======================================================================{RESET}
+{RED}{BOLD}🚨 SECURITY WARNING:
+  NEVER expose the BamBot portal or agent to the public internet!
+  Exposing this software allows anyone to execute prints on your 3D printer,
+  creating a severe safety and fire hazard. Run only inside local networks (intranet)
+  or behind a secure VPN (e.g. Tailscale / WireGuard).{RESET}
+{BLUE}{BOLD}======================================================================{RESET}
 """
     print(banner)
 

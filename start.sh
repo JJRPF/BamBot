@@ -3,10 +3,15 @@
 GREEN="\033[92m"
 BLUE="\033[94m"
 YELLOW="\033[93m"
+RED="\033[91m"
+BOLD="\033[1m"
 RESET="\033[0m"
 
 echo -e "${BLUE}=========================================${RESET}"
-echo -e "${BLUE}   Starting BamBuddy Agent Services...   ${RESET}"
+echo -e "${BLUE}   Starting BamBot Agent Services...   ${RESET}"
+echo -e "${BLUE}=========================================${RESET}"
+echo -e "${RED}${BOLD}🚨 SECURITY WARNING: NEVER expose BamBot to the public internet!${RESET}"
+echo -e "Run only inside local network or secure VPN (Tailscale/WireGuard)."
 echo -e "${BLUE}=========================================${RESET}"
 
 # Kill any existing uvicorn processes on 8000 and 8001

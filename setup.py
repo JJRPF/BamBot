@@ -26,6 +26,12 @@ def print_banner():
 
           🤖 BamBot X1C Printer Agent Setup Script 🤖
 ======================================================================{RESET}
+{RED}{BOLD}🚨 SECURITY WARNING:
+  NEVER expose the BamBot portal or agent to the public internet!
+  Exposing this software allows anyone to execute prints on your 3D printer,
+  creating a severe safety and fire hazard. Run only inside local networks (intranet)
+  or behind a secure VPN (e.g. Tailscale / WireGuard).{RESET}
+{BLUE}{BOLD}======================================================================{RESET}
 """
     print(banner)
 
@@ -341,10 +347,15 @@ def create_start_script(agent_port):
 GREEN="\\033[92m"
 BLUE="\\033[94m"
 YELLOW="\\033[93m"
+RED="\\033[91m"
+BOLD="\\033[1m"
 RESET="\\033[0m"
 
 echo -e "${{BLUE}}=========================================${{RESET}}"
 echo -e "${{BLUE}}   Starting BamBot Agent Services...   ${{RESET}}"
+echo -e "${{BLUE}}=========================================${{RESET}}"
+echo -e "${{RED}}${{BOLD}}🚨 SECURITY WARNING: NEVER expose BamBot to the public internet!${{RESET}}"
+echo -e "Run only inside local network or secure VPN (Tailscale/WireGuard)."
 echo -e "${{BLUE}}=========================================${{RESET}}"
 
 # Kill any existing uvicorn processes on {agent_port} and 8001

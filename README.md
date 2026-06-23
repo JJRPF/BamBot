@@ -12,6 +12,16 @@ BamBot is a premium, AI-powered control center and web portal designed specifica
 
 ---
 
+## 🚨 Security Warning: Intranet Only
+
+> [!CAUTION]
+> **NEVER EXPOSE BAMBOT TO THE PUBLIC INTERNET.**
+> BamBot is designed for internal local network (intranet) deployment only. It lacks built-in authentication layers, request rate limiting, and encrypted transport by default. Exposing this application to the public internet will allow unauthorized users to access printer telemetry and execute remote G-code commands on your physical 3D printer, posing a severe safety/fire risk.
+>
+> If remote access is required, you must run it behind a secure Virtual Private Network (VPN), such as **Tailscale** or **WireGuard**.
+
+---
+
 ## Key Features
 
 ### 1. Interactive AI Chat & Multiple Sessions

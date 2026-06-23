@@ -70,7 +70,15 @@ Ensure you have the following installed:
 
 ### Configuration
 
-Create a `.env` file in the root directory (copy from template or configure the variables):
+You can configure the project easily by running the interactive Python setup script:
+
+```bash
+uv run python setup.py
+```
+
+This script will verify system dependencies, prompt you for API keys and endpoint URLs, dynamically scan for available ports on your system, and generate the background start scripts.
+
+Alternatively, you can manually create a `.env` file in the root directory:
 
 ```ini
 # BamBot API Configurations

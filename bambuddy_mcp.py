@@ -153,20 +153,62 @@ async def slice_model_file(
             else:
                 return {"error": f"Model file '{filename}' not found in local directories or library."}
             
-    orca_path = "/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer"
-    if not os.path.exists(orca_path):
-        return {"error": "OrcaSlicer installation not found at /Applications/OrcaSlicer.app"}
+    import shutil
+    
+    # 1. Check environment variable first
+    orca_path = os.getenv("ORCA_SLICER_PATH", "")
+    if not orca_path or not os.path.exists(orca_path):
+        # 2. Check macOS standard path
+        mac_path = "/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer"
+        if os.path.exists(mac_path):
+            orca_path = mac_path
+        else:
+            # 3. Check system PATH (for Linux/Pi)
+            which_orca = shutil.which("orcaslicer") or shutil.which("OrcaSlicer") or shutil.which("orca-slicer")
+            if which_orca:
+                orca_path = which_orca
+            else:
+                # 4. Fallback to common Linux paths
+                for p in ["/usr/bin/orcaslicer", "/usr/local/bin/orcaslicer", "/usr/bin/OrcaSlicer"]:
+                    if os.path.exists(p):
+                        orca_path = p
+                        break
+
+    if not orca_path:
+        return {"error": "OrcaSlicer installation not found. Please install OrcaSlicer and ensure it is on your PATH, or set the ORCA_SLICER_PATH environment variable."}
         
-    process_json = f"/Users/JJR/Library/Application Support/OrcaSlicer/system/BBL/process/{process_preset}.json"
-    filament_json = f"/Users/JJR/Library/Application Support/OrcaSlicer/system/BBL/filament/{filament_preset}.json"
-    machine_json = "/Users/JJR/Library/Application Support/OrcaSlicer/system/BBL/machine/Bambu Lab X1 Carbon 0.4 nozzle.json"
+    # Locate preset JSON files dynamically based on OS
+    home = os.path.expanduser("~")
+    resource_dir = ""
+    env_res_dir = os.getenv("ORCA_RESOURCES_DIR", "")
+    if env_res_dir and os.path.exists(env_res_dir):
+        resource_dir = env_res_dir
+    else:
+        mac_res_dir = os.path.join(home, "Library", "Application Support", "OrcaSlicer", "system", "BBL")
+        linux_res_dir = os.path.join(home, ".config", "OrcaSlicer", "system", "BBL")
+        linux_res_dir_lower = os.path.join(home, ".config", "orcaslicer", "system", "BBL")
+        
+        if os.path.exists(mac_res_dir):
+            resource_dir = mac_res_dir
+        elif os.path.exists(linux_res_dir):
+            resource_dir = linux_res_dir
+        elif os.path.exists(linux_res_dir_lower):
+            resource_dir = linux_res_dir_lower
+            
+    if not resource_dir:
+        # Fallback to macOS default if nothing found
+        resource_dir = os.path.join(home, "Library", "Application Support", "OrcaSlicer", "system", "BBL")
+        
+    process_json = os.path.join(resource_dir, "process", f"{process_preset}.json")
+    filament_json = os.path.join(resource_dir, "filament", f"{filament_preset}.json")
+    machine_json = os.path.join(resource_dir, "machine", "Bambu Lab X1 Carbon 0.4 nozzle.json")
     
     if not os.path.exists(process_json):
-        return {"error": f"Process preset '{process_preset}' not found."}
+        return {"error": f"Process preset '{process_preset}' not found in {process_json}."}
     if not os.path.exists(filament_json):
-        return {"error": f"Filament preset '{filament_preset}' not found."}
+        return {"error": f"Filament preset '{filament_preset}' not found in {filament_json}."}
         
-    output_dir = "/private/tmp"
+    output_dir = "/tmp"
     base_name = filename
     for ext in [".stl", ".STL", ".3mf", ".3MF"]:
         if base_name.endswith(ext):

@@ -159,58 +159,85 @@ def install_linux(arch):
         print(f"Please install it manually from: {BLUE}https://github.com/SoftFever/OrcaSlicer/releases{RESET}")
         return None
 
-def write_placeholder_presets(presets_dir):
+def configure_presets(orca_path, presets_dir):
     print(f"\n[{CYAN}*{RESET}] Configuring default system presets inside: {presets_dir}")
     os.makedirs(os.path.join(presets_dir, "process"), exist_ok=True)
     os.makedirs(os.path.join(presets_dir, "filament"), exist_ok=True)
     os.makedirs(os.path.join(presets_dir, "machine"), exist_ok=True)
 
-    process_file = os.path.join(presets_dir, "process", "0.20mm Standard @BBL X1C.json")
-    filament_file = os.path.join(presets_dir, "filament", "Bambu PLA Basic @BBL X1C.json")
-    machine_file = os.path.join(presets_dir, "machine", "Bambu Lab X1 Carbon 0.4 nozzle.json")
-
-    # Standard process preset mockup
-    process_data = {
-        "type": "process",
-        "setting_id": "GP004",
-        "name": "0.20mm Standard @BBL X1C",
-        "inherits": "0.20mm Standard @BBL X1C",
-        "instantiation": "true",
-        "layer_height": "0.2",
-        "first_layer_height": "0.2"
-    }
-
-    # Standard filament preset mockup
-    filament_data = {
-        "type": "filament",
-        "setting_id": "GF001",
-        "name": "Bambu PLA Basic @BBL X1C",
-        "inherits": "Bambu PLA Basic @BBL X1C",
-        "instantiation": "true",
-        "filament_type": "PLA",
-        "filament_density": "1.24"
-    }
-
-    # Standard machine preset mockup
-    machine_data = {
-        "type": "machine",
-        "setting_id": "GM001",
-        "name": "Bambu Lab X1 Carbon 0.4 nozzle",
-        "inherits": "Bambu Lab X1 Carbon 0.4 nozzle",
-        "instantiation": "true",
-        "nozzle_diameter": [
-            "0.4"
-        ]
-    }
-
-    with open(process_file, "w") as f:
-        json.dump(process_data, f, indent=4)
-    with open(filament_file, "w") as f:
-        json.dump(filament_data, f, indent=4)
-    with open(machine_file, "w") as f:
-        json.dump(machine_data, f, indent=4)
-
-    print(f"{GREEN}✔ Created default JSON presets for standard slicing profiles!{RESET}")
+    copied = False
+    
+    # 1. Attempt to copy from macOS App Bundle
+    if "OrcaSlicer.app" in orca_path:
+        app_path = orca_path.split(".app")[0] + ".app"
+        mac_profiles_src = os.path.join(app_path, "Contents", "Resources", "profiles", "BBL")
+        if os.path.exists(mac_profiles_src):
+            try:
+                shutil.copytree(mac_profiles_src, presets_dir, dirs_exist_ok=True)
+                print(f"{GREEN}✔ Successfully copied system profiles from macOS App bundle.{RESET}")
+                copied = True
+            except Exception as e:
+                print(f"{YELLOW}Warning: Failed to copy macOS bundle profiles: {e}{RESET}")
+                
+    # 2. Attempt to extract from Linux AppImage
+    elif orca_path.endswith(".AppImage"):
+        print(f"[{CYAN}*{RESET}] Extracting system profiles from Linux AppImage...")
+        try:
+            # Run extraction in /tmp
+            subprocess.run([orca_path, "--appimage-extract"], cwd="/tmp", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            extracted_src = "/tmp/squashfs-root/resources/profiles/BBL"
+            if os.path.exists(extracted_src):
+                shutil.copytree(extracted_src, presets_dir, dirs_exist_ok=True)
+                print(f"{GREEN}✔ Successfully extracted and copied system profiles from Linux AppImage.{RESET}")
+                copied = True
+            # Cleanup
+            shutil.rmtree("/tmp/squashfs-root", ignore_errors=True)
+        except Exception as e:
+            print(f"{YELLOW}Warning: Failed to extract AppImage profiles: {e}{RESET}")
+            
+    # 3. Fallback placeholder JSONs (with correct 'from': 'system' attribute)
+    if not copied:
+        print(f"[{CYAN}*{RESET}] Writing default preset profiles manually...")
+        process_file = os.path.join(presets_dir, "process", "0.20mm Standard @BBL X1C.json")
+        filament_file = os.path.join(presets_dir, "filament", "Bambu PLA Basic @BBL X1C.json")
+        machine_file = os.path.join(presets_dir, "machine", "Bambu Lab X1 Carbon 0.4 nozzle.json")
+        
+        process_data = {
+            "type": "process",
+            "setting_id": "GP004",
+            "name": "0.20mm Standard @BBL X1C",
+            "from": "system",
+            "inherits": "0.20mm Standard @BBL X1C",
+            "instantiation": "true",
+            "layer_height": "0.2",
+            "first_layer_height": "0.2"
+        }
+        filament_data = {
+            "type": "filament",
+            "setting_id": "GF001",
+            "name": "Bambu PLA Basic @BBL X1C",
+            "from": "system",
+            "inherits": "Bambu PLA Basic @BBL X1C",
+            "instantiation": "true",
+            "filament_type": "PLA",
+            "filament_density": "1.24"
+        }
+        machine_data = {
+            "type": "machine",
+            "setting_id": "GM001",
+            "name": "Bambu Lab X1 Carbon 0.4 nozzle",
+            "from": "system",
+            "inherits": "Bambu Lab X1 Carbon 0.4 nozzle",
+            "instantiation": "true",
+            "nozzle_diameter": ["0.4"]
+        }
+        with open(process_file, "w") as f:
+            json.dump(process_data, f, indent=4)
+        with open(filament_file, "w") as f:
+            json.dump(filament_data, f, indent=4)
+        with open(machine_file, "w") as f:
+            json.dump(machine_data, f, indent=4)
+        print(f"{GREEN}✔ Created fallback JSON presets for standard slicing profiles.{RESET}")
 
 def load_existing_env(filepath):
     env_vars = {}
@@ -306,7 +333,7 @@ def main():
     if not orca_res_dir:
         orca_res_dir = default_res_dir
 
-    write_placeholder_presets(orca_res_dir)
+    configure_presets(orca_path, orca_res_dir)
     update_env_files(orca_path, orca_res_dir)
 
     print(f"\n{GREEN}{BOLD}🎉 OrcaSlicer configuration complete and ready for BamBot! 🎉{RESET}")
